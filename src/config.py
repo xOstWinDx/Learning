@@ -11,8 +11,8 @@ class Config(BaseSettings):
     DEBUG_MODE: bool = False
 
     @property
-    def get_database_url(self) -> str:
-        return (f"asyncpg://{self.DATABASE_USER}:{self.DATABASE_PASSWORD}"
+    def database_url(self) -> str:
+        return (f"postgresql+asyncpg://{self.DATABASE_USER}:{self.DATABASE_PASSWORD}"
                 f"@{self.DATABASE_HOST}:{self.DATABASE_PORT}/{self.DATABASE_NAME}")
 
     model_config = SettingsConfigDict(env_file=".env", extra='ignore')

@@ -1,6 +1,6 @@
-from .config import Config
-from .database import BaseModel
+from .config import CONFIG
 
-__all__ = [
-    "Config"
-]
+
+__all__ = ["CONFIG"]
+
+
