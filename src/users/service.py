@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Sequence
 
 from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
 
@@ -8,23 +8,31 @@ from src.users.repository import UserRepository
 from src.users.schemas import UserCreate, UserRead
 
 
-class UserService(BaseService):
-
+class UserService(BaseService[User, UserRepository]):
     def __init__(self, session_factory: async_sessionmaker):
         super().__init__(session_factory)
 
     async def create_user(self, user_data: UserCreate) -> None:
-        async def operation(session: AsyncSession):
+        async def operation(session: AsyncSession) -> None:
             user_repo = UserRepository(session=session)
-            if user_repo.already_exists(email=user_data.email):
+            if await user_repo.is_exists(email=user_data.email):
                 raise ValueError("User already exists")
-            return await user_repo.add(model=User(**user_data.model_dump()))
+            await user_repo.add(**user_data.model_dump())
 
-        return await self._execute_transaction(operation)
+        await self._execute_transaction(operation)
 
-    async def get_user(self, ident: Any | tuple[Any, ...]) -> UserRead:
-        async def operation(session: AsyncSession):
+    async def get_user(self, **filter_by):
+        async def operation(session: AsyncSession) -> User:
             user_repo = UserRepository(session=session)
-            return await user_repo.get(ident=ident)
+            return await user_repo.get_one_or_none(**filter_by)
 
-        return UserRead.model_validate(await self._execute_transaction(operation))
+        user = await self._execute_transaction(operation)
+        return user
+
+    async def get_all_users(self) -> list[UserRead]:
+        async def operation(session: AsyncSession) -> Sequence[User]:
+            user_repo = UserRepository(session=session)
+            return await user_repo.get_all()
+
+        users = await self._execute_transaction(operation)
+        return [UserRead.model_validate(user) for user in users]

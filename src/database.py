@@ -37,4 +37,3 @@ class BaseModel(DeclarativeBase):
     id: Mapped[id_]
     created_at: Mapped[created_at]
 
-from .users.models import User  # noqa

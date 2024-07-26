@@ -1,27 +1,29 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from pydantic import UUID4
 
+from src.users.auth.dependencies import authorization_admin, authorization, authorization_user
+from src.users.auth.exceptions import ForbiddenAuthExc
 from src.users.dependencies import get_user_service
-from src.users.schemas import UserCreate
+from src.users.schemas import UserRead
 from src.users.service import UserService
 
 router = APIRouter()
 
 
-@router.get("/users/{user_id}/", status_code=200)
+@router.get("/users/{user_id}/", status_code=200, response_model=UserRead)
 async def get_user(
         user_id: UUID4,
-        user_service: UserService = Depends(get_user_service)
+        user_service: UserService = Depends(get_user_service),
+        user=Depends(authorization_user)
 ):
-    return user_service.get_user(user_id)
+    if user_id != user.id and not user.is_admin:
+        raise ForbiddenAuthExc
+    return await user_service.get_user(id=user_id)
 
 
-@router.post("/users", status_code=201)
-async def create_user(
-        user_data: UserCreate,
-        user_service: UserService = Depends(get_user_service)
+@router.get("/users/", status_code=200, response_model=list[UserRead])
+async def get_all_user(
+        user_service: UserService = Depends(get_user_service),
+        _=Depends(authorization_admin)
 ):
-    try:
-        await user_service.create_user(user_data=user_data)
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+    return await user_service.get_all_users()

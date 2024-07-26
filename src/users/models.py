@@ -9,3 +9,4 @@ class User(BaseModel):
     email: Mapped[str32] = mapped_column(unique=True, index=True)
     name: Mapped[str16] = mapped_column(index=True)
     hashed_password: Mapped[bytes]
+    is_admin: Mapped[bool]
