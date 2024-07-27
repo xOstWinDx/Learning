@@ -1,29 +1,33 @@
 from fastapi import APIRouter, Depends
 from pydantic import UUID4
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.users.auth.dependencies import authorization_admin, authorization, authorization_user
+from src.dependencies import get_async_session
+from src.users.auth.dependencies import authorization_admin, authorization_user
 from src.users.auth.exceptions import ForbiddenAuthExc
-from src.users.dependencies import get_user_service
-from src.users.schemas import UserRead
+from src.users.schemas import UserResponse
 from src.users.service import UserService
 
 router = APIRouter()
 
 
-@router.get("/users/{user_id}/", status_code=200, response_model=UserRead)
+@router.get("/users/{user_id}/", status_code=200, response_model=UserResponse)
 async def get_user(
         user_id: UUID4,
-        user_service: UserService = Depends(get_user_service),
+        session: AsyncSession = Depends(get_async_session),
         user=Depends(authorization_user)
 ):
     if user_id != user.id and not user.is_admin:
         raise ForbiddenAuthExc
-    return await user_service.get_user(id=user_id)
+
+    user_service = UserService(session=session)
+    return await user_service.get_user_by_id(user_id=user_id)
 
 
-@router.get("/users/", status_code=200, response_model=list[UserRead])
+@router.get("/users/", status_code=200, response_model=list[UserResponse])
 async def get_all_user(
-        user_service: UserService = Depends(get_user_service),
+        session: AsyncSession = Depends(get_async_session),
         _=Depends(authorization_admin)
 ):
+    user_service = UserService(session=session)
     return await user_service.get_all_users()

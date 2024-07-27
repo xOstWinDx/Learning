@@ -1,7 +1,6 @@
-from typing import Literal, Any
+from typing import Any
 
 from pydantic import BaseModel, UUID4, EmailStr, Field
-
 
 
 class JwtPayload(BaseModel):

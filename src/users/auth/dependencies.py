@@ -1,17 +1,17 @@
 import jwt
-from fastapi.encoders import jsonable_encoder
 from jwt import PyJWTError
-from fastapi import Depends, Cookie
+from fastapi import Depends
 from pydantic import ValidationError
+from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.requests import Request
 
+from src.dependencies import get_async_session
 from src.users.auth.exceptions import InvalidTokenAuthExc, UnknownUserAuthExc, ForbiddenAuthExc, \
     InvalidCredentialsAuthExc
 from src.users.auth.schemas import JwtPayload, UserAuth
 from src.users.auth.config import AUTH_CONFIG
 from src.users.auth.utils import verify_password
-from src.users.dependencies import get_user_service
-from src.users.models import User
+from src.users.schemas import UserResponse
 from src.users.service import UserService
 
 
@@ -39,9 +39,10 @@ def decode_jwt(request: Request) -> JwtPayload:
 
 async def authentication(
         user_auth: UserAuth,
-        auth_service: UserService = Depends(get_user_service)
+        session: AsyncSession = Depends(get_async_session)
 ) -> str:
-    user = await auth_service.get_user(email=user_auth.email)
+    user_service = UserService(session=session)
+    user = await user_service.get_user_by_email(email=user_auth.email)
     if not (user and verify_password(user_auth.password, user.hashed_password)):
         raise InvalidCredentialsAuthExc
     return encode_jwt(payload=JwtPayload(id=user.id, name=user.name))
@@ -50,9 +51,10 @@ async def authentication(
 def authorization(is_admin: bool = False):
     async def inner(
             payload: JwtPayload = Depends(decode_jwt),
-            auth_service: UserService = Depends(get_user_service)
-    ) -> User:
-        user = await auth_service.get_user(id=payload.id)
+            session: AsyncSession = Depends(get_async_session)
+    ) -> UserResponse:
+        user_service = UserService(session=session)
+        user = await user_service.get_user_by_id(user_id=payload.id)
         if not user:
             raise UnknownUserAuthExc
         if not (user.is_admin == is_admin):

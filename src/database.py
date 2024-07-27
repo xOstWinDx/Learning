@@ -16,6 +16,7 @@ engine = create_async_engine(
 )
 session_factory = async_sessionmaker(bind=engine, expire_on_commit=False)
 
+
 bigint = Annotated[int, int]
 str2 = Annotated[str, 2]
 str8 = Annotated[str, 8]
@@ -36,4 +37,3 @@ class BaseModel(DeclarativeBase):
     }
     id: Mapped[id_]
     created_at: Mapped[created_at]
-
