@@ -5,8 +5,9 @@ from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.responses import Response
 
-from src.dependencies import get_async_session, get_task_group
-from src.users.auth.dependencies import authentication
+from src.dependencies import get_async_session
+from src.auth.dependencies import authentication
+from src.users.repository import UserRepository
 from src.users.schemas import UserCreate
 from src.users.service import UserService
 
@@ -18,25 +19,30 @@ async def register(
         user_data: UserCreate,
         session: AsyncSession = Depends(get_async_session)
 ):
-    async with session.begin():
-        try:
+    try:
+        async with session.begin():
             async with TaskGroup() as tg:
-                user_services = UserService(session=session)
+                user_services = UserService(repository=UserRepository(session=session))
                 f1 = tg.create_task(
-                    user_services.create_user(
+                    user_services.add(
                         email=user_data.email,
                         password=user_data.password,
                         name=user_data.name
                     )
                 )
                 f2 = tg.create_task(asyncio.sleep(5))
-                # Дополнительная бизнес-логика во время создания юзера...
-        except ValueError as e:
-            raise HTTPException(status_code=409, detail=str(e))
-        except Exception as e:
-            await session.rollback()
-            raise HTTPException(status_code=500, detail=str(e))
-        return f1.result(), f2.result()
+            # Дополнительная бизнес-логика во время создания юзера...
+            await session.commit()
+    except ExceptionGroup as e:
+        await session.rollback()
+        for sub_exception in e.exceptions:
+            if isinstance(sub_exception, ValueError):
+                raise HTTPException(status_code=409, detail=str(sub_exception))
+            else:
+                print(sub_exception)
+                raise HTTPException(status_code=500, detail=str(e))
+
+    return f1.result(), f2.result()
 
 
 @router.post("/login")

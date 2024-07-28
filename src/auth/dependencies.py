@@ -6,13 +6,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.requests import Request
 
 from src.dependencies import get_async_session
-from src.users.auth.exceptions import InvalidTokenAuthExc, UnknownUserAuthExc, ForbiddenAuthExc, \
+from src.auth.exceptions import InvalidTokenAuthExc, UnknownUserAuthExc, ForbiddenAuthExc, \
     InvalidCredentialsAuthExc
-from src.users.auth.schemas import JwtPayload, UserAuth
-from src.users.auth.config import AUTH_CONFIG
-from src.users.auth.utils import verify_password
+from src.auth.schemas import JwtPayload, UserAuth
+from src.auth.config import AUTH_CONFIG
+from src.auth.service import AuthService
+from src.auth.utils import verify_password
+from src.users.repository import UserRepository
 from src.users.schemas import UserResponse
-from src.users.service import UserService
 
 
 def encode_jwt(payload: JwtPayload) -> str:
@@ -41,8 +42,8 @@ async def authentication(
         user_auth: UserAuth,
         session: AsyncSession = Depends(get_async_session)
 ) -> str:
-    user_service = UserService(session=session)
-    user = await user_service.get_user_by_email(email=user_auth.email)
+    auth_service = AuthService(repository=UserRepository(session=session))
+    user = await auth_service.get_one_or_none(email=user_auth.email)
     if not (user and verify_password(user_auth.password, user.hashed_password)):
         raise InvalidCredentialsAuthExc
     return encode_jwt(payload=JwtPayload(id=user.id, name=user.name))
@@ -53,8 +54,8 @@ def authorization(is_admin: bool = False):
             payload: JwtPayload = Depends(decode_jwt),
             session: AsyncSession = Depends(get_async_session)
     ) -> UserResponse:
-        user_service = UserService(session=session)
-        user = await user_service.get_user_by_id(user_id=payload.id)
+        auth_service = AuthService(repository=UserRepository(session=session))
+        user = await auth_service.get_one_or_none(id=payload.id)
         if not user:
             raise UnknownUserAuthExc
         if not (user.is_admin == is_admin):
