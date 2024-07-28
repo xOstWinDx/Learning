@@ -8,4 +8,4 @@ class AuthConfig(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
 
-AUTH_CONFIG = AuthConfig()
+AUTH_CONFIG = AuthConfig()  # type: ignore

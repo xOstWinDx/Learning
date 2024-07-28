@@ -7,12 +7,15 @@ from src.users.schemas import UserAll, UserResponse
 from src.users.utils import hash_password
 
 
-class UserService(AbstractService[UserAll, UserRepository]):
+class UserService(AbstractService[UserResponse, UserRepository]):
     def __init__(self, repository: UserRepository):
         super().__init__(repository)
 
-    async def get_by_id(self, user_id: uuid.UUID) -> UserResponse:
-        return UserResponse.model_validate(await self.repository.get_one_or_none(id=user_id))
+    async def get_by_id(self, user_id: uuid.UUID) -> UserResponse | None:
+        user = await self.repository.get_one_or_none(id=user_id)
+        if user is None:
+            return None
+        return UserResponse.model_validate(user)
 
     async def get_all(
             self,
@@ -20,7 +23,7 @@ class UserService(AbstractService[UserAll, UserRepository]):
             email: str | None = None,
             name: str | None = None,
             is_admin: bool | None = None
-    ) -> Sequence[UserResponse]:
+    ) -> Sequence[UserResponse | None]:
         return [
             UserResponse.model_validate(user) for user in await self.repository.get_all(
                 id=id,
@@ -37,14 +40,15 @@ class UserService(AbstractService[UserAll, UserRepository]):
             name: str | None = None,
             is_admin: bool | None = None
     ) -> UserResponse | None:
-        return UserResponse.model_validate(
-            await self.repository.get_one_or_none(
-                id=id,
-                email=email,
-                name=name,
-                is_admin=is_admin
-            )
+        user = await self.repository.get_one_or_none(
+            id=id,
+            email=email,
+            name=name,
+            is_admin=is_admin
         )
+        if user is None:
+            return None
+        return UserResponse.model_validate(user)
 
     async def add(
             self,

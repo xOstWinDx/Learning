@@ -2,7 +2,7 @@ import uuid
 from abc import ABC, abstractmethod
 from typing import TypeVar, Generic, Type, Sequence
 
-from sqlalchemy import select, exists, delete, update, Executable, Result
+from sqlalchemy import select, exists, delete, update, Executable, Result, Update, Select, Insert
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -55,7 +55,8 @@ class AbstractPostgresRepository(AbstractRepository[T], Generic[T], ABC):
     async def _execute(self, stmt: Executable) -> Result:
         return await self.session.execute(stmt)
 
-    def _query_filters_builder(self, base_query: Executable, **filter_by) -> Executable:
+    def _query_filters_builder(self, base_query: Select | Insert | Update, **filter_by) -> Select | Insert | Update:
         for key, value in filter_by.items():
-            base_query = base_query.where(getattr(self.model, key) == value)
+            if value is not None:
+                base_query = base_query.where(getattr(self.model, key) == value)
         return base_query

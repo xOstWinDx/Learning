@@ -33,6 +33,7 @@ async def register(
                 f2 = tg.create_task(asyncio.sleep(5))
             # Дополнительная бизнес-логика во время создания юзера...
             await session.commit()
+            return f1.result(), f2.result()
     except ExceptionGroup as e:
         await session.rollback()
         for sub_exception in e.exceptions:
@@ -42,7 +43,7 @@ async def register(
                 print(sub_exception)
                 raise HTTPException(status_code=500, detail=str(e))
 
-    return f1.result(), f2.result()
+
 
 
 @router.post("/login")

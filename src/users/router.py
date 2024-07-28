@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import UUID4
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -21,10 +21,12 @@ async def get_user(
         raise ForbiddenAuthExc
 
     user_service = UserService(repository=UserRepository(session=session))
-    return await user_service.get_one_or_none(id=user_id)
+    if user := await user_service.get_one_or_none(id=user_id):
+        return user
+    raise HTTPException(status_code=404, detail="User not found")
 
 
-@router.get("/users/", status_code=200, response_model=list[UserResponse])
+@router.get("/users/", status_code=200, response_model=list[UserResponse | None])
 async def get_all_user(
         session: AsyncSession = Depends(get_async_session),
         _=Depends(authorization_admin)

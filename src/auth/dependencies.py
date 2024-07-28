@@ -13,7 +13,7 @@ from src.auth.config import AUTH_CONFIG
 from src.auth.service import AuthService
 from src.auth.utils import verify_password
 from src.users.repository import UserRepository
-from src.users.schemas import UserResponse
+from src.users.schemas import UserAll
 
 
 def encode_jwt(payload: JwtPayload) -> str:
@@ -28,9 +28,9 @@ def decode_jwt(request: Request) -> JwtPayload:
     token = request.cookies.get("token")
     try:
         payload = jwt.decode(
-            jwt=token,
+            jwt=token,  # type: ignore
             key=AUTH_CONFIG.JWT_SECRET_KEY,
-            algorithms=AUTH_CONFIG.JWT_ALGORITHM
+            algorithms=[AUTH_CONFIG.JWT_ALGORITHM]
         )
         return JwtPayload(**payload)
     except (PyJWTError, ValidationError) as e:
@@ -53,12 +53,12 @@ def authorization(is_admin: bool = False):
     async def inner(
             payload: JwtPayload = Depends(decode_jwt),
             session: AsyncSession = Depends(get_async_session)
-    ) -> UserResponse:
+    ) -> UserAll:
         auth_service = AuthService(repository=UserRepository(session=session))
         user = await auth_service.get_one_or_none(id=payload.id)
         if not user:
             raise UnknownUserAuthExc
-        if not (user.is_admin == is_admin):
+        if is_admin and not user.is_admin:
             raise ForbiddenAuthExc
         return user
 

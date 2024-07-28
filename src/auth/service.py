@@ -17,11 +17,12 @@ class AuthService(UserService):
             name: str | None = None,
             is_admin: bool | None = None
     ) -> UserAll | None:
-        return UserAll.model_validate(
-            await self.repository.get_one_or_none(
-                id=id,
-                email=email,
-                name=name,
-                is_admin=is_admin
-            )
+        user = await self.repository.get_one_or_none(
+            id=id,
+            email=email,
+            name=name,
+            is_admin=is_admin
         )
+        if user is None:
+            return None
+        return UserAll.model_validate(user)

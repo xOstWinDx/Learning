@@ -1,7 +1,7 @@
 """Add user table
 
 Revision ID: 0162c240458d
-Revises: 
+Revises:
 Create Date: 2024-07-25 21:10:22.905171
 
 """

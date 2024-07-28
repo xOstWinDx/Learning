@@ -18,4 +18,4 @@ class Config(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra='ignore')
 
 
-CONFIG = Config()
+CONFIG = Config()  # type: ignore
