@@ -71,7 +71,6 @@ class UserRepository(AbstractPostgresRepository[User]):
             self,
             id: int,  # noqa
             email: str | None,
-            hashed_password: bytes,
             name: str,
             is_admin: bool = False
     ) -> User:
@@ -80,7 +79,6 @@ class UserRepository(AbstractPostgresRepository[User]):
             values(
                 id=id,
                 email=email,
-                hashed_password=hashed_password,
                 name=name,
                 is_admin=is_admin
             ).
