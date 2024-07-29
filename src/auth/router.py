@@ -4,16 +4,16 @@ from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.responses import Response
 
-from src.dependencies import get_async_session
+from src.auth.dependencies import get_async_session
 from src.auth.dependencies import authentication
-from src.users.repository import UserRepository
-from src.users.schemas import UserCreate
-from src.users.service import UserService
+from src.common.repository import UserRepository
+from src.common.schemas import UserCreate
+from src.common.service import UserService
 
 router = APIRouter(prefix="/auth")
 
 
-@router.post("/register")
+@router.post("/register", status_code=201)
 async def register(
         user_data: UserCreate,
         session: AsyncSession = Depends(get_async_session)
@@ -23,11 +23,10 @@ async def register(
             async with TaskGroup() as tg:
                 user_services = UserService(repository=UserRepository(session=session))
                 f1 = tg.create_task(
-                    user_services.add(
-                        id=user_data.id,
+                    user_services.create_by_email(
                         email=user_data.email,
-                        password=user_data.password,
-                        name=user_data.name
+                        name=user_data.name,
+                        password=user_data.password
                     )
                 )
             # Дополнительная бизнес-логика во время создания юзера...
@@ -41,8 +40,6 @@ async def register(
             else:
                 print(sub_exception)
                 raise HTTPException(status_code=500, detail=str(e))
-
-
 
 
 @router.post("/login")

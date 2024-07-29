@@ -1,19 +1,19 @@
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import UUID4
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.dependencies import get_async_session
-from src.auth import authorization_admin, authorization_user, ForbiddenAuthExc
-from src.users.repository import UserRepository
-from src.users.schemas import UserResponse
-from src.users.service import UserService
+from src.common.exceptions import ForbiddenAuthExc
+from src.common.dependencies import authorization_user, authorization_admin
+from src.users.dependencies import get_async_session
+from src.common.repository import UserRepository
+from src.common.schemas import UserResponse
+from src.common.service import UserService
 
 router = APIRouter()
 
 
 @router.get("/users/{user_id}/", status_code=200, response_model=UserResponse)
 async def get_user(
-        user_id: UUID4,
+        user_id: int,
         session: AsyncSession = Depends(get_async_session),
         user=Depends(authorization_user)
 ):

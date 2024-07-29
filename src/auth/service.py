@@ -1,6 +1,6 @@
-from src.users.repository import UserRepository
-from src.users.schemas import UserAll
-from src.users.service import UserService
+from src.common.repository import UserRepository
+from src.common.schemas import UserAll
+from src.common.service import UserService
 
 
 class AuthService(UserService):

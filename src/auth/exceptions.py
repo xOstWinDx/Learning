@@ -2,11 +2,6 @@ from fastapi import HTTPException
 from starlette import status
 
 
-class UnknownUserAuthExc(ValueError):
-    def __init__(self):
-        super().__init__("User unknown")
-
-
 class IncorrectPasswordAuthExc(ValueError):
     def __init__(self):
         super().__init__("Incorrect Password")
@@ -22,11 +17,3 @@ class InvalidCredentialsAuthExc(HTTPException):
         super().__init__(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid pass or login")
 
 
-class ForbiddenAuthExc(HTTPException):
-    def __init__(self):
-        super().__init__(status_code=status.HTTP_403_FORBIDDEN, detail="Not enough rights")
-
-
-class InvalidTokenAuthExc(HTTPException):
-    def __init__(self):
-        super().__init__(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")

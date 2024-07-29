@@ -1,18 +1,20 @@
 import datetime
 from typing import Annotated
 
-from sqlalchemy import BIGINT, String, JSON, func
+from sqlalchemy import BIGINT, String, JSON, func, NullPool
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from sqlalchemy.orm import DeclarativeBase, mapped_column, Mapped
 
 from src.config import CONFIG
 
-engine = create_async_engine(
-    url=CONFIG.database_url,
-    echo=CONFIG.DEBUG_MODE,
-    pool_size=10,
-    max_overflow=100
-)
+if CONFIG.MODE == "TEST":
+    DATABASE_PARAMS = {"poolclass": NullPool}
+    engine = create_async_engine(
+        url=CONFIG.test_database_url, echo=False, **DATABASE_PARAMS
+    )
+else:
+    engine = create_async_engine(url=CONFIG.database_url, echo=False)
+
 session_factory = async_sessionmaker(bind=engine, expire_on_commit=False)
 
 
@@ -37,3 +39,4 @@ class BaseModel(DeclarativeBase):
     }
     id: Mapped[id_]
     created_at: Mapped[created_at]
+

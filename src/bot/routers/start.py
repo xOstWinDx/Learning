@@ -8,8 +8,8 @@ from aiogram.types import Message
 from src.bot.messages import get_start_msg
 from src.database import session_factory
 from src.logging import configure_logger
-from src.users.repository import UserRepository
-from src.users.service import UserService
+from src.common.repository import UserRepository
+from src.common.service import UserService
 
 configure_logger()
 logger = logging.getLogger("bot.start")
@@ -34,8 +34,8 @@ async def start(message: Message):
                 )
                 tasks.append(
                     asyncio.create_task(
-                        user_services.add(
-                            id=message.from_user.id,
+                        user_services.create_by_telegram_id(
+                            telegram_id=message.from_user.id,
                             name=message.from_user.full_name
                         )
                     )

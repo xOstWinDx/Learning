@@ -1,5 +1,14 @@
 import bcrypt
+import jwt
+
+from src.config import CONFIG
+from src.common.schemas import JwtPayload
+
+def encode_jwt(payload: JwtPayload) -> str:
+    return jwt.encode(
+        payload=payload.model_dump(),
+        key=CONFIG.JWT_SECRET_KEY,
+        algorithm=CONFIG.JWT_ALGORITHM
+    )
 
 
-def verify_password(plain_password: str, hashed_password: bytes) -> bool:
-    return bcrypt.checkpw(plain_password.encode(), hashed_password)

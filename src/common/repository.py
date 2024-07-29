@@ -2,8 +2,8 @@ from typing import Sequence
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.abstract.repository import AbstractPostgresRepository
-from src.users.models import User
+from src.abstract import AbstractPostgresRepository
+from src.common.models import User
 
 
 class UserRepository(AbstractPostgresRepository[User]):
@@ -50,6 +50,7 @@ class UserRepository(AbstractPostgresRepository[User]):
             self,
             id: int | None = None,  # noqa
             email: str | None = None,
+            telegram_id: int | None = None,
             name: str | None = None,
             is_admin: bool | None = None,
     ) -> bool:
@@ -67,19 +68,21 @@ class UserRepository(AbstractPostgresRepository[User]):
         query = self.base_delete_stmt.where(self.model.id == user_id)
         await self._execute(query)
 
-    async def add(
+    async def create(
             self,
-            id: int,  # noqa
-            email: str | None,
             name: str,
+            telegram_id: int | None = None,  # noqa
+            email: str | None = None,
+            hashed_password: bytes | None = None,
             is_admin: bool = False
     ) -> User:
         query = (
             self.base_insert_stmt.
             values(
-                id=id,
-                email=email,
                 name=name,
+                telegram_id=telegram_id,
+                email=email,
+                hashed_password=hashed_password,
                 is_admin=is_admin
             ).
             returning(self.model)
@@ -96,6 +99,3 @@ class UserRepository(AbstractPostgresRepository[User]):
         )
         res = await self._execute(query)
         return res.scalar_one()
-
-
-

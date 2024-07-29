@@ -26,7 +26,7 @@ class AbstractService(Generic[T, R], ABC):
         raise NotImplementedError
 
     @abstractmethod
-    async def add(self, **entity_data) -> None:
+    async def create(self, **entity_data) -> None:
         raise NotImplementedError
 
     @abstractmethod

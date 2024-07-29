@@ -1,13 +1,12 @@
 import logging
-import uuid
 from typing import Sequence
 
 from src.abstract import AbstractService
-from src.users.repository import UserRepository
-from src.users.schemas import UserResponse
-from src.users.utils import hash_password
+from src.common.repository import UserRepository
+from src.common.schemas import UserResponse
+from src.common.utils import hash_password
 
-logger = logging.getLogger("users.service")
+logger = logging.getLogger("common.service.user")
 
 
 class UserService(AbstractService[UserResponse, UserRepository]):
@@ -98,26 +97,45 @@ class UserService(AbstractService[UserResponse, UserRepository]):
             logger.exception("Exception while getting user: %s", e)
             raise
 
-    async def add(
+    async def create_by_telegram_id(
             self,
-            id: int,  # noqa
+            telegram_id: int,  # noqa
+            name: str,
+            password: str | None = None,
+    ):
+        if await self.is_exists(telegram_id=telegram_id):
+            raise ValueError(f"User with id: {telegram_id} already exists")
+        return await self.create(name=name, telegram_id=telegram_id, password=password)
+
+    async def create_by_email(
+            self,
+            email: str,
+            name: str,
+            password: str | None = None,
+    ):
+        if await self.is_exists(email=email):
+            raise ValueError(f"User with email: {email} already exists")
+        return await self.create(name=name, email=email, password=password)
+
+    async def create(
+            self,
             name: str,
             email: str | None = None,
+            telegram_id: int | None = None,  # noqa
+            password: str | None = None,
     ) -> UserResponse:
         logger.debug("Add user: %s", id)
+        if password is not None:
+            password = hash_password(password)
         try:
-            if await self.repository.is_exists(id=id):
-                logger.warning("User already exists: %s", id)
-                raise ValueError("User already exists")
             return UserResponse.model_validate(
-                await self.repository.add(
-                    id=id,
+                await self.repository.create(
+                    telegram_id=telegram_id,
                     email=email,
-                    name=name
+                    name=name,
+                    hashed_password=password
                 )
             )
-        except ValueError:
-            raise
         except Exception as e:
             logger.exception("Exception while adding user: %s", e)
             raise
@@ -125,6 +143,7 @@ class UserService(AbstractService[UserResponse, UserRepository]):
     async def is_exists(
             self,
             id: int | None = None,  # noqa
+            telegram_id: int | None = None,
             email: str | None = None,
             name: str | None = None,
             is_admin: bool | None = None
@@ -139,6 +158,7 @@ class UserService(AbstractService[UserResponse, UserRepository]):
         try:
             return await self.repository.is_exists(
                 id=id,
+                telegram_id=telegram_id,
                 email=email,
                 name=name,
                 is_admin=is_admin
@@ -147,5 +167,5 @@ class UserService(AbstractService[UserResponse, UserRepository]):
             logger.exception("Exception while checking if user exists: %s", e)
             raise
 
-    async def delete(self, entity_id: uuid.UUID) -> None:
+    async def delete(self, entity_id: int) -> None:
         pass

@@ -17,7 +17,7 @@ class AbstractRepository(Generic[T], ABC):
         self.model = model
 
     @abstractmethod
-    async def add(self, **entity_data) -> T:
+    async def create(self, **entity_data) -> T:
         raise NotImplementedError
 
     @abstractmethod
