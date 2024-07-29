@@ -1,5 +1,3 @@
-import uuid
-
 from src.users.repository import UserRepository
 from src.users.schemas import UserAll
 from src.users.service import UserService
@@ -12,7 +10,7 @@ class AuthService(UserService):
 
     async def get_one_or_none(
             self,
-            id: uuid.UUID | None = None,  # noqa
+            id: int | None = None,  # noqa
             email: str | None = None,
             name: str | None = None,
             is_admin: bool | None = None

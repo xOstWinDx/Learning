@@ -4,13 +4,8 @@ from pydantic import BaseModel, UUID4, EmailStr, Field
 
 
 class JwtPayload(BaseModel):
-    id: UUID4
+    id: int
     name: str
-
-    def model_dump(self, *args, **kwargs) -> dict[str, Any]:
-        d = super().model_dump(*args, **kwargs)
-        d["id"] = str(d["id"])
-        return d
 
 
 class UserAuth(BaseModel):

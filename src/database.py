@@ -1,6 +1,5 @@
 import datetime
 from typing import Annotated
-from uuid import UUID
 
 from sqlalchemy import BIGINT, String, JSON, func
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
@@ -22,7 +21,7 @@ str2 = Annotated[str, 2]
 str8 = Annotated[str, 8]
 str16 = Annotated[str, 16]
 str32 = Annotated[str, 32]
-id_ = Annotated[UUID, mapped_column(primary_key=True, unique=True, index=True)]
+id_ = Annotated[int, mapped_column(primary_key=True, unique=True, index=True, autoincrement=True)]
 created_at = Annotated[datetime.datetime, mapped_column(server_default=func.current_timestamp())]
 
 
@@ -33,6 +32,7 @@ class BaseModel(DeclarativeBase):
         str8: String(8),
         str16: String(16),
         str32: String(32),
+        id_: BIGINT,
         dict: JSON
     }
     id: Mapped[id_]

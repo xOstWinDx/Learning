@@ -1,4 +1,3 @@
-import uuid
 from abc import ABC, abstractmethod
 from typing import TypeVar, Generic, Sequence
 
@@ -15,7 +14,7 @@ class AbstractService(Generic[T, R], ABC):
         self.repository = repository
 
     @abstractmethod
-    async def get_by_id(self, entity_id: uuid.UUID) -> T:
+    async def get_by_id(self, entity_id: int) -> T:
         raise NotImplementedError
 
     @abstractmethod
@@ -23,7 +22,7 @@ class AbstractService(Generic[T, R], ABC):
         raise NotImplementedError
 
     @abstractmethod
-    async def delete(self, entity_id: uuid.UUID) -> None:
+    async def delete(self, entity_id: int) -> None:
         raise NotImplementedError
 
     @abstractmethod

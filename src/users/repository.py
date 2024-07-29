@@ -1,4 +1,3 @@
-import uuid
 from typing import Sequence
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -13,7 +12,7 @@ class UserRepository(AbstractPostgresRepository[User]):
 
     async def get_one_or_none(
             self,
-            id: uuid.UUID | None = None,  # noqa
+            id: int | None = None,  # noqa
             email: str | None = None,
             name: str | None = None,
             is_admin: bool | None = None,
@@ -31,7 +30,7 @@ class UserRepository(AbstractPostgresRepository[User]):
 
     async def get_all(
             self,
-            id: uuid.UUID | None = None,  # noqa
+            id: int | None = None,  # noqa
             email: str | None = None,
             name: str | None = None,
             is_admin: bool | None = None,
@@ -49,7 +48,7 @@ class UserRepository(AbstractPostgresRepository[User]):
 
     async def is_exists(
             self,
-            id: uuid.UUID | None = None,  # noqa
+            id: int | None = None,  # noqa
             email: str | None = None,
             name: str | None = None,
             is_admin: bool | None = None,
@@ -64,13 +63,13 @@ class UserRepository(AbstractPostgresRepository[User]):
         res = await self._execute(query)
         return res.scalar()
 
-    async def delete(self, user_id: uuid.UUID) -> None:
+    async def delete(self, user_id: int) -> None:
         query = self.base_delete_stmt.where(self.model.id == user_id)
         await self._execute(query)
 
     async def add(
             self,
-            id: uuid.UUID,  # noqa
+            id: int,  # noqa
             email: str,
             hashed_password: bytes,
             name: str,
@@ -90,7 +89,7 @@ class UserRepository(AbstractPostgresRepository[User]):
         res = await self._execute(query)
         return res.scalar_one()
 
-    async def update(self, id: uuid.UUID, **entity_data) -> User:  # noqa
+    async def update(self, id: int, **entity_data) -> User:  # noqa
         query = (
             self.base_update_stmt.
             where(self.model.id == id).
