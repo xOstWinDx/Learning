@@ -25,15 +25,15 @@ async def register(
                 user_services = UserService(repository=UserRepository(session=session))
                 f1 = tg.create_task(
                     user_services.add(
+                        id=user_data.id,
                         email=user_data.email,
                         password=user_data.password,
                         name=user_data.name
                     )
                 )
-                f2 = tg.create_task(asyncio.sleep(5))
             # Дополнительная бизнес-логика во время создания юзера...
             await session.commit()
-            return f1.result(), f2.result()
+            return f1.result()
     except ExceptionGroup as e:
         await session.rollback()
         for sub_exception in e.exceptions:

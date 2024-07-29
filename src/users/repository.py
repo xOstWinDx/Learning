@@ -70,7 +70,7 @@ class UserRepository(AbstractPostgresRepository[User]):
     async def add(
             self,
             id: int,  # noqa
-            email: str,
+            email: str | None,
             hashed_password: bytes,
             name: str,
             is_admin: bool = False

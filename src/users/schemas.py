@@ -9,6 +9,7 @@ class UserBase(BaseModel):
 
 
 class UserCreate(UserBase):
+    id: int
     password: str = Field(min_length=8)
 
 
