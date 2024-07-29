@@ -4,13 +4,12 @@ from src.base import BaseSchema
 
 
 class UserBase(BaseModel):
-    email: EmailStr
+    email: EmailStr | None
     name: str = Field(max_length=32, min_length=3)
 
 
 class UserCreate(UserBase):
     id: int
-    password: str = Field(min_length=8)
 
 
 class UserResponse(BaseSchema, UserBase):
@@ -18,7 +17,4 @@ class UserResponse(BaseSchema, UserBase):
 
 
 class UserAll(UserResponse):
-    hashed_password: bytes
-
-
-
+    ...

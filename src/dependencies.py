@@ -9,3 +9,4 @@ async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
     async with session_factory() as session:
         yield session
 
+

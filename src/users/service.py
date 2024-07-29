@@ -101,20 +101,18 @@ class UserService(AbstractService[UserResponse, UserRepository]):
     async def add(
             self,
             id: int,  # noqa
-            password: str,
             name: str,
             email: str | None = None,
     ) -> UserResponse:
         logger.debug("Add user: %s", id)
         try:
-            if await self.repository.is_exists(id=id) or await self.repository.is_exists(email=email):
+            if await self.repository.is_exists(id=id):
                 logger.warning("User already exists: %s", id)
                 raise ValueError("User already exists")
             return UserResponse.model_validate(
                 await self.repository.add(
                     id=id,
                     email=email,
-                    hashed_password=hash_password(password),
                     name=name
                 )
             )

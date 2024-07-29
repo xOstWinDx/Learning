@@ -1,6 +1,4 @@
-from typing import Any
-
-from pydantic import BaseModel, UUID4, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field
 
 
 class JwtPayload(BaseModel):
