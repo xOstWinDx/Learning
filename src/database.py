@@ -1,8 +1,8 @@
 import datetime
-from typing import Annotated
+from typing import Annotated, AsyncGenerator
 
 from sqlalchemy import BIGINT, String, JSON, func, NullPool
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
+from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 from sqlalchemy.orm import DeclarativeBase, mapped_column, Mapped
 
 from src.config import CONFIG
@@ -16,6 +16,11 @@ else:
     engine = create_async_engine(url=CONFIG.database_url, echo=False)
 
 session_factory = async_sessionmaker(bind=engine, expire_on_commit=False)
+
+
+async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
+    async with session_factory() as session:
+        yield session
 
 
 bigint = Annotated[int, int]
@@ -39,4 +44,3 @@ class BaseModel(DeclarativeBase):
     }
     id: Mapped[id_]
     created_at: Mapped[created_at]
-

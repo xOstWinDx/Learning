@@ -1,31 +1,32 @@
-import uuid
 from abc import ABC, abstractmethod
 from typing import TypeVar, Generic, Type, Sequence
 
-from sqlalchemy import select, exists, delete, update, Executable, Result, Update, Select, Insert
+from sqlalchemy import select, exists, delete, update, Update, Select, Insert, Delete
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.database import BaseModel
+from src.models import User
 
 T = TypeVar('T', bound=BaseModel)
 
 
 class AbstractRepository(Generic[T], ABC):
 
-    def __init__(self, model: Type[T]):
-        self.model = model
-
     @abstractmethod
-    async def create(self, **entity_data) -> T:
+    async def create_by_data(self, **entity_data) -> T:
         raise NotImplementedError
 
     @abstractmethod
-    async def get_one_or_none(self, **filter_by) -> T:
+    async def get_by_id(self, entity_id: int) -> T:
         raise NotImplementedError
 
     @abstractmethod
-    async def update(self, entity_id: uuid.UUID, **entity_data) -> T:
+    async def get_one_or_none(self, **filter_by) -> T | None:
+        raise NotImplementedError
+
+    @abstractmethod
+    async def update_by_id(self, entity_id: int, **new_data) -> T:
         raise NotImplementedError
 
     @abstractmethod
@@ -37,26 +38,48 @@ class AbstractRepository(Generic[T], ABC):
         raise NotImplementedError
 
     @abstractmethod
-    async def delete(self, entity_id: uuid.UUID) -> None:
+    async def delete_by_id(self, entity_id: int) -> None:
         raise NotImplementedError
 
 
-class AbstractPostgresRepository(AbstractRepository[T], Generic[T], ABC):
+class AbstractPostgresRepository(AbstractRepository[T], ABC):
 
-    def __init__(self, model: Type[T], session: AsyncSession):
-        super().__init__(model)
-        self.session = session
-        self.base_select_query = select(self.model)
-        self.base_exists_query = select(exists(self.model))
-        self.base_insert_stmt = insert(self.model)
-        self.base_delete_stmt = delete(self.model)
-        self.base_update_stmt = update(self.model)
+    def __init__(self, session: AsyncSession, model: Type[T]):
+        self.model = model
+        self.session: AsyncSession = session
+        self.base_select_query: Select = select(self.model)
+        self.base_exists_query: Select = select(exists(self.model))
+        self.base_insert_stmt: Insert = insert(self.model)
+        self.base_delete_stmt: Delete = delete(self.model)
+        self.base_update_stmt: Update = update(self.model)
 
-    async def _execute(self, stmt: Executable) -> Result:
-        return await self.session.execute(stmt)
+    @abstractmethod
+    async def create_by_entity(self, entity: T) -> T:
+        raise NotImplementedError
 
-    def _query_filters_builder(self, base_query: Select | Insert | Update, **filter_by) -> Select | Insert | Update:
-        for key, value in filter_by.items():
-            if value is not None:
-                base_query = base_query.where(getattr(self.model, key) == value)
-        return base_query
+    @abstractmethod
+    async def update_by_entity(self, entity: T, **new_data) -> T:
+        raise NotImplementedError
+
+    @abstractmethod
+    async def delete_by_entity(self, entity: T) -> None:
+        raise NotImplementedError
+
+
+class AbstractAuthRepository(ABC):
+
+    @abstractmethod
+    async def get_one_or_none(self, **filter_by) -> User:
+        raise NotImplementedError
+
+    @abstractmethod
+    async def is_exists(self, **filter_by) -> bool:
+        raise NotImplementedError
+
+    @abstractmethod
+    async def create_by_data(self, **entity_data) -> User:
+        raise NotImplementedError
+
+
+class AbstractUserRepository(AbstractRepository[User], ABC):
+    pass

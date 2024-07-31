@@ -17,3 +17,11 @@ class InvalidCredentialsAuthExc(HTTPException):
         super().__init__(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid pass or login")
 
 
+class UnknownUserAuthExc(ValueError):
+    def __init__(self):
+        super().__init__("User unknown")
+
+
+class InvalidTokenAuthExc(HTTPException):
+    def __init__(self):
+        super().__init__(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")

@@ -5,9 +5,9 @@ from httpx import AsyncClient, ASGITransport
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.auth.utils import encode_jwt
-from src.common.schemas import JwtPayload
+from src.auth.schemas import JwtPayload
 from src.config import CONFIG
-from src.common.models import User  # noqa
+from src.models import User
 from src.database import session_factory, engine, BaseModel
 from src.main import app
 

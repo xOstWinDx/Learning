@@ -16,9 +16,6 @@ class Config(BaseSettings):
     TEST_DATABASE_PORT: int
     TEST_DATABASE_NAME: str
 
-    JWT_ALGORITHM: str
-    JWT_SECRET_KEY: str
-
     DEBUG_MODE: bool = False
 
     MODE: Literal["TEST", "PROD"] = "PROD"

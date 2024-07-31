@@ -8,8 +8,8 @@ from aiogram.types import Message
 from src.bot.messages import get_start_msg
 from src.database import session_factory
 from src.logging import configure_logger
-from src.common.repository import UserRepository
-from src.common.service import UserService
+from src.users.repository import UserPostgresRepository
+from src.users.service import UserService
 
 configure_logger()
 logger = logging.getLogger("bot.start")
@@ -23,7 +23,7 @@ async def start(message: Message):
     try:
         async with session_factory() as session:
             async with session.begin():
-                user_services = UserService(repository=UserRepository(session=session))
+                user_services = UserService(repository=UserPostgresRepository(session=session))
                 tasks.append(
                     asyncio.create_task(
                         message.bot.send_message(
