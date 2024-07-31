@@ -5,11 +5,12 @@ from aiogram import Router
 from aiogram.filters import CommandStart
 from aiogram.types import Message
 
+from src.auth.repository import AuthPostgresRepository
+from src.auth.service import AuthService
 from src.bot.messages import get_start_msg
 from src.database import session_factory
-from src.logging import configure_logger
-from src.users.repository import UserPostgresRepository
-from src.users.service import UserService
+from src.logs import configure_logger
+
 
 configure_logger()
 logger = logging.getLogger("bot.start")
@@ -23,7 +24,7 @@ async def start(message: Message):
     try:
         async with session_factory() as session:
             async with session.begin():
-                user_services = UserService(repository=UserPostgresRepository(session=session))
+                auth_services = AuthService(AuthPostgresRepository(session=session))
                 tasks.append(
                     asyncio.create_task(
                         message.bot.send_message(
@@ -34,7 +35,7 @@ async def start(message: Message):
                 )
                 tasks.append(
                     asyncio.create_task(
-                        user_services.create_by_telegram_id(
+                        auth_services.register_by_telegram_id(
                             telegram_id=message.from_user.id,
                             name=message.from_user.full_name
                         )

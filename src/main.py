@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-from src.logging import configure_logger
+from src.logs import configure_logger
 from src.users import users_router
 from src.auth import auth_router
 
