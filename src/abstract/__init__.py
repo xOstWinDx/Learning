@@ -1,7 +1,13 @@
-from .repository import AbstractRepository, AbstractPostgresRepository
+from .repository import AbstractUserRepository, AbstractAuthRepository, AbstractCreateRepository, \
+    AbstractReadRepository, AbstractUpdateRepository, AbstractDeleteRepository, AbstractExistsRepository
 
 __all__ = [
-    'AbstractRepository',
-    'AbstractPostgresRepository',
+    'AbstractAuthRepository',
+    'AbstractUserRepository',
+    'AbstractCreateRepository',
+    'AbstractReadRepository',
+    'AbstractUpdateRepository',
+    'AbstractDeleteRepository',
+    'AbstractExistsRepository',
 ]
 

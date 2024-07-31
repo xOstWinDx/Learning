@@ -1,4 +1,4 @@
-from typing import AsyncGenerator
+from typing import AsyncGenerator, Any
 
 import pytest
 from httpx import AsyncClient, ASGITransport
@@ -63,7 +63,7 @@ async def admin_client(unauthorized_client: AsyncClient) -> AsyncClient:
 
 
 @pytest.fixture(scope="function")
-async def authorized_client(unauthorized_client: AsyncClient) -> AsyncClient:
+async def authorized_client(unauthorized_client: AsyncClient) -> AsyncGenerator[AsyncClient, Any, Any]:
     async with AsyncClient(
             transport=ASGITransport(app=app),
             base_url="http://test"
